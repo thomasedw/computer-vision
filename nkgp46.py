@@ -134,13 +134,15 @@ def detectObjects():
         classIDs, confidences, boxes = post_process(frame, results, confThreshold, nmsThreshold)
 
         for detected_object in range(0, len(boxes)):
-            box = boxes[detected_object]
-            left = box[0]
-            top = box[1]
-            width = box[2]
-            height = box[3]
+            if (classes[classIDs[detected_object]] in ['car', 'truck', 'person', 'bicycle']):
+                box = boxes[detected_object]
+                left = box[0]
+                top = box[1]
+                width = box[2]
+                height = box[3]
+                print(classes[classIDs[detected_object]])
 
-            drawBoundingBox(frame, classes[classIDs[detected_object]], confidences[detected_object], left, top, left + width, top + height, (255, 178, 50))
+                drawBoundingBox(frame, classes[classIDs[detected_object]], confidences[detected_object], left, top, left + width, top + height, (255, 178, 50))
         
         cv2.imshow(windowName, frame)
         cv2.setWindowProperty(windowName, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN & args.fullscreen)
