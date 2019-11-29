@@ -3,7 +3,7 @@ import os
 import numpy as np
 
 class ObjectDetector:
-    def __init__(self, dataset_path, config_file_path="C://Users/thoma/development/coursework/software_systems_and_applications/Computer Vision/implementation/yolov3.cfg", weights_file_path="C://Users/thoma/development/coursework/software_systems_and_applications/Computer Vision/implementation/yolov3.weights", classes_file_path="C://Users/thoma/development/coursework/software_systems_and_applications/Computer Vision/implementation/coco.names", cycle_left_path="left-images", cycle_right_path="right-images", non_max_threshold=0.4, confidence_threshold=0.5, input_width=1024, input_height=544):
+    def __init__(self, dataset_path, config_file_path="C://Users/thoma/development/coursework/Year 3/computer-vision/implementation/yolov3.cfg", weights_file_path="C://Users/thoma/development/coursework/Year 3/computer-vision/implementation/yolov3.weights", classes_file_path="C://Users/thoma/development/coursework/Year 3/computer-vision/implementation/coco.names", cycle_left_path="left-images", cycle_right_path="right-images", non_max_threshold=0.4, confidence_threshold=0.5, input_width=1024, input_height=544):
         super().__init__()
         self.dataset_path = dataset_path
         self.cycle_left_path = cycle_left_path

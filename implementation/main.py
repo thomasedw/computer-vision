@@ -12,7 +12,8 @@ import math
 ##############################
 # COMPUTER VISION COURSEWORK #
 ##############################
-master_path_to_dataset = "C://Users/thoma/development/coursework/software_systems_and_applications/Computer Vision/implementation/TTBB-durham-02-10-17-sub10"
+
+master_path_to_dataset = "C://Users/thoma/development/coursework/Year 3/computer-vision/implementation/TTBB-durham-02-10-17-sub10"
 directory_to_cycle_left = "left-images"
 directory_to_cycle_right = "right-images"
 segmentation_colors = {
@@ -49,7 +50,7 @@ baseline = 0.2090607502
 object_detector = ObjectDetector(master_path_to_dataset)
 object_classes = object_detector.get_classes()
 segmenter = Segmenter()
-disparity_calculator = DisparityCalculator(max_disparity=192, model_path='C://Users/thoma/development/coursework/software_systems_and_applications/Computer Vision/implementation/pretrained_model_KITTI2015.tar')
+disparity_calculator = DisparityCalculator(max_disparity=192, model_path='C://Users/thoma/development/coursework/Year 3/computer-vision/implementation/pretrained_model_KITTI2015.tar')
 
 left_file_list = sorted(os.listdir(full_path_directory_left))
 
@@ -99,6 +100,12 @@ for left_filename in left_file_list:
     # calculated_disparity[np.any(right_masked_image == [0, 0, 0], axis=-1)] = 0
     # Multiply disparity to resonable (visible) values
     calculated_disparity = (calculated_disparity * 192).astype('uint16')
+
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(2, 2))
+    calculated_disparity = clahe.apply(calculated_disparity)
+    # cv2.imshow("contrast calculated disparity", calculated_disparity)
+    # cv2.waitKey(50000)
+
     cv2.ellipse(calculated_disparity, (int(left_masked_image.shape[1] / 2), left_masked_image.shape[0]), (left_masked_image.shape[0], 130), 0, 180, 360, (0, 0, 0), -1)
     end_disparity_calc_time = time.time()
     average_segmentation_time = []
@@ -177,10 +184,10 @@ for left_filename in left_file_list:
         print("| Average segmentation time: {}".format(sum(average_segmentation_time) / len(average_segmentation_time)))
     
     # Output disparity
-    cv2.namedWindow("calculated_disparity", cv2.WINDOW_NORMAL)
+    # cv2.namedWindow("calculated_disparity", cv2.WINDOW_NORMAL)
     cv2.imshow("calculated_disparity", calculated_disparity)
     # Output detected objects
-    cv2.namedWindow("object_detection", cv2.WINDOW_NORMAL)
+    # cv2.namedWindow("object_detection", cv2.WINDOW_NORMAL)
     cv2.imshow("object_detection", original_image)
     cv2.waitKey(500)
 
