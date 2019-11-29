@@ -6,7 +6,9 @@ import torch
 class Segmenter():
     def __init__(self):
         super().__init__()
-        self.net = models.segmentation.deeplabv3_resnet101(pretrained=True).eval()
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+        self.net = models.segmentation.deeplabv3_resnet101(pretrained=True).eval().to(self.device)
         self.transforms = transform.Compose([
             transform.Resize(256),
             transform.ToTensor(),
@@ -15,10 +17,10 @@ class Segmenter():
 
     def segment_image(self, image):
         network_input = self.transforms(image).unsqueeze(0)
-        network_output = self.net(network_input)['out']
-
-        output_map_encoded = torch.argmax(network_output.squeeze(), dim=0).detach().cpu()
-
+        network_input = network_input.to(self.device)
+        network_output = self.net(network_input)['out'].detach().cpu()
+    
+        output_map_encoded = torch.argmax(network_output.squeeze(), dim=0)
         output_map = self.decode_segmentation_map(output_map_encoded)
 
         return output_map
