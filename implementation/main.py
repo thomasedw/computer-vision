@@ -152,8 +152,11 @@ for left_filename in left_file_list:
             original_image[boxes[i][1]:boxes[i][1] + boxes[i][3], boxes[i][0]:boxes[i][0] + boxes[i][2]][np.all(segmentation_map == object_colour, axis=-1)] = object_colour
 
             average_disparity = np.mean(disparity_segmented_pixels)
-
         estimated_distance = focal_length * (baseline / average_disparity) * 100
+        depth_error = estimated_distance ** 2 / (baseline * focal_length) * 1.1
+        estimated_distance += depth_error
+        print("Estimated depth = {}".format(estimated_distance))
+        print("Depth error = {}".format(depth_error))
         # print("average disparity = {}, calculated distance = {}".format(average_disparity, estimated_distance))
 
         # cv2.imshow("segmentation-object-"+str(i), segmentation_map_of_object)
