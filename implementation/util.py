@@ -1,4 +1,5 @@
 import cv2
+import math
 
 def draw_bounding_box(image, class_name, estimated_distance, left, top, right, bottom, colour):
     if class_name == "person":
@@ -6,9 +7,15 @@ def draw_bounding_box(image, class_name, estimated_distance, left, top, right, b
     else:
         cv2.rectangle(image, (left, top), (right, bottom), colour, 3)
 
-    label = "{}:{:.2f}m".format(class_name, estimated_distance)
+    if math.isinf(estimated_distance):
+        estimated_distance = ""
 
-    fontScale = min(1 / (estimated_distance) ** 1.001, 1) + 0.3
+    if estimated_distance != "":
+        label = "{}:{:.2f}m".format(class_name, estimated_distance)
+        fontScale = min(1 / (estimated_distance) ** 1.001, 1) + 0.3
+    else:
+        label = "{}".format(class_name)
+        fontScale = 1.3
 
     label_size, baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5 * fontScale, 1)
     top = max(top, label_size[1])

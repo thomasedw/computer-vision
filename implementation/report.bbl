@@ -1,0 +1,37 @@
+\begin{thebibliography}{1}
+
+\bibitem{hirschmuller2007stereo}
+Heiko Hirschmuller.
+\newblock Stereo processing by semiglobal matching and mutual information.
+\newblock {\em IEEE Transactions on pattern analysis and machine intelligence},
+  30(2):328--341, 2007.
+
+\bibitem{chang2018pyramid}
+Jia-Ren Chang and Yong-Sheng Chen.
+\newblock Pyramid stereo matching network.
+\newblock In {\em Proceedings of the IEEE Conference on Computer Vision and
+  Pattern Recognition}, pages 5410--5418, 2018.
+
+\bibitem{Menze2015ISA}
+Moritz Menze, Christian Heipke, and Andreas Geiger.
+\newblock Joint 3d estimation of vehicles and scene flow.
+\newblock In {\em ISPRS Workshop on Image Sequence Analysis (ISA)}, 2015.
+
+\bibitem{Menze2018JPRS}
+Moritz Menze, Christian Heipke, and Andreas Geiger.
+\newblock Object scene flow.
+\newblock {\em ISPRS Journal of Photogrammetry and Remote Sensing (JPRS)},
+  2018.
+
+\bibitem{monodepth2}
+Cl{\'{e}}ment Godard, Oisin {Mac Aodha}, Michael Firman, and Gabriel~J.
+  Brostow.
+\newblock Digging into self-supervised monocular depth prediction.
+\newblock October 2019.
+
+\bibitem{kupyn2019deblurganv2}
+Orest Kupyn, Tetiana Martyniuk, Junru Wu, and Zhangyang Wang.
+\newblock Deblurgan-v2: Deblurring (orders-of-magnitude) faster and better,
+  2019.
+
+\end{thebibliography}

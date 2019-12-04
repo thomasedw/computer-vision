@@ -224,10 +224,10 @@ class BasicBlock(nn.Module):
 class disparityregression(nn.Module):
     def __init__(self, maxdisp):
         super(disparityregression, self).__init__()
-        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-        self.disp = Variable(torch.Tensor(np.reshape(np.array(range(maxdisp)),[1,maxdisp,1,1])).to(self.device), requires_grad=False)
+        self.disp = Variable(torch.Tensor(np.reshape(np.array(range(maxdisp)),[1,maxdisp,1,1])).cuda().half(), requires_grad=False)
 
     def forward(self, x):
+        torch.cuda.empty_cache()
         disp = self.disp.repeat(x.size()[0],1,x.size()[2],x.size()[3])
         out = torch.sum(x*disp,1)
         return out
@@ -285,12 +285,12 @@ class feature_extraction(nn.Module):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        torch.cuda.empty_cache()
         output      = self.firstconv(x)
         output      = self.layer1(output)
         output_raw  = self.layer2(output)
         output      = self.layer3(output_raw)
         output_skip = self.layer4(output)
-
 
         output_branch1 = self.branch1(output_skip)
         output_branch1 = F.interpolate(output_branch1, (output_skip.size()[2],output_skip.size()[3]), mode='bilinear', align_corners=False)
@@ -331,7 +331,7 @@ class hourglass(nn.Module):
                                    nn.BatchNorm3d(inplanes)) #+x
 
     def forward(self, x ,presqu, postsqu):
-        
+        torch.cuda.empty_cache()
         out  = self.conv1(x) #in:1/4 out:1/8
         pre  = self.conv2(out) #in:1/8 out:1/8
         if postsqu is not None:
@@ -354,7 +354,6 @@ class hourglass(nn.Module):
 class StackedHourglass(nn.Module):
     def __init__(self, maxdisp):
         super(StackedHourglass, self).__init__()
-        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         self.maxdisp = maxdisp
 
         self.feature_extraction = feature_extraction()
@@ -404,13 +403,14 @@ class StackedHourglass(nn.Module):
 
 
     def forward(self, left, right):
+        torch.cuda.empty_cache()
 
         refimg_fea     = self.feature_extraction(left)
         targetimg_fea  = self.feature_extraction(right)
 
 
         #matching
-        cost = Variable(torch.FloatTensor(refimg_fea.size()[0], refimg_fea.size()[1]*2, int(self.maxdisp/4),  refimg_fea.size()[2],  refimg_fea.size()[3]).zero_()).to(self.device)
+        cost = Variable(torch.FloatTensor(refimg_fea.size()[0], refimg_fea.size()[1]*2, int(self.maxdisp/4),  refimg_fea.size()[2],  refimg_fea.size()[3]).zero_()).cuda().half()
 
         for i in range(int(self.maxdisp/4)):
             if i > 0 :
@@ -464,18 +464,16 @@ class StackedHourglass(nn.Module):
             return pred3
 
 
-class DisparityCalculator():
+class PyramidDisparityCalculator():
     def __init__(self, max_disparity, model_path):
         super().__init__()
-        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         self.max_disparity = max_disparity
         
         model = StackedHourglass(max_disparity)
         model = nn.DataParallel(model, device_ids=[0])
-        model.to(self.device)
+        model.cuda().half()
 
-        
-        state_dict = torch.load(model_path, map_location=self.device)
+        state_dict = torch.load(model_path)
         model.load_state_dict(state_dict['state_dict'])
 
         model.eval()
@@ -484,6 +482,12 @@ class DisparityCalculator():
 
     def calculate_disparity(self, left_image, right_image):
         processed = get_transform(augment=False)
+        
+        gray_left = cv2.cvtColor(left_image, cv2.COLOR_BGR2GRAY)
+        gray_right = cv2.cvtColor(right_image, cv2.COLOR_BGR2GRAY)
+
+        left_image = np.power(left_image, 1.0).astype('uint8')
+        right_image = np.power(right_image, 1.0).astype('uint8')
 
         imgL = processed(left_image).numpy()
         imgR = processed(right_image).numpy()
@@ -504,8 +508,8 @@ class DisparityCalculator():
         imgL = np.lib.pad(imgL,((0,0),(0,0),(top_pad,0),(0,left_pad)),mode='constant',constant_values=0)
         imgR = np.lib.pad(imgR,((0,0),(0,0),(top_pad,0),(0,left_pad)),mode='constant',constant_values=0)
 
-        imgL = torch.FloatTensor(imgL).to(self.device)
-        imgR = torch.FloatTensor(imgR).to(self.device)
+        imgL = torch.FloatTensor(imgL).cuda().half()
+        imgR = torch.FloatTensor(imgR).cuda().half()
 
         imgL, image_right = Variable(imgL), Variable(imgR)
 
@@ -513,8 +517,8 @@ class DisparityCalculator():
             calculated_disparity = self.model(imgL, imgR)
 
         calculated_disparity = torch.squeeze(calculated_disparity)
-        output_disparity = calculated_disparity.data.cpu().numpy()
+        output_disparity = calculated_disparity.data.cpu().numpy().astype('int16')
         
         cv2.resize(output_disparity, (right_image.shape[0], right_image.shape[1]))
-
+        
         return output_disparity
